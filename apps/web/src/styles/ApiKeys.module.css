@@ -1,0 +1,272 @@
+.errorBanner {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  color: #DC2626;
+  margin-bottom: var(--space-8);
+  font-size: 14px;
+}
+
+.successBanner {
+  display: flex;
+  align-items: center;
+  padding: var(--space-6);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  color: #047857;
+  margin-bottom: var(--space-8);
+}
+
+.successContent {
+  flex: 1;
+}
+
+.successContent strong {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.warningText {
+  margin: var(--space-2) 0;
+  font-size: 13px;
+  color: #DC2626;
+}
+
+.keyDisplay {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  background-color: var(--color-bg);
+  border-radius: 4px;
+}
+
+.keyDisplay code {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #7c3aed;
+  word-break: break-all;
+}
+
+.keyDisplay button {
+  padding: 6px 12px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.formCard {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-divider);
+  border-radius: 8px;
+  padding: var(--space-8);
+  margin-bottom: var(--space-8);
+}
+
+.formCard h2 {
+  margin-top: 0;
+  margin-bottom: var(--space-6);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.formGroup label {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.formGroup input {
+  padding: 8px 12px;
+  border: 1px solid var(--color-divider);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 150ms ease;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-divider);
+}
+
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-16);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: var(--space-4);
+}
+
+.emptyState h3 {
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.keysGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-6);
+}
+
+.keyCard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-divider);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 150ms ease;
+}
+
+.keyCard:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.cardHeader h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.cardContent {
+  flex: 1;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.keyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+
+.value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.value code {
+  font-family: var(--font-mono);
+  background-color: var(--color-bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #7c3aed;
+}
+
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-divider);
+}
+
+.cardFooter button {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.revokedText {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .keysGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .formActions button {
+    width: 100%;
+  }
+
+  .keyDisplay {
+    flex-direction: column;
+  }
+
+  .keyDisplay code {
+    width: 100%;
+  }
+
+  .keyDisplay button {
+    width: 100%;
+  }
+}

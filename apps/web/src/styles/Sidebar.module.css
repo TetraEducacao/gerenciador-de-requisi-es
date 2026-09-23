@@ -1,0 +1,157 @@
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--color-surface);
+  color: #F3F4F6;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.header {
+  padding: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+  font-weight: 600;
+  font-size: 14px;
+  color: #F3F4F6;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  display: none;
+}
+
+.toggleBtn:hover {
+  color: #F3F4F6;
+}
+
+.nav {
+  flex: 1;
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  color: #D1D5DB;
+  transition: all 150ms ease;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #F3F4F6;
+}
+
+.navItem.active {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-left-color: var(--color-primary);
+  color: #F3F4F6;
+}
+
+.icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.services {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.servicesTitle {
+  font-size: 11px;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-4);
+}
+
+.service {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  font-size: 12px;
+  color: #D1D5DB;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.serviceName {
+  white-space: nowrap;
+}
+
+.footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.version {
+  font-size: 11px;
+  color: #6B7280;
+  opacity: 0.5;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(239, 68, 68, 0.1);
+  color: #F3F4F6;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: var(--sidebar-width);
+    position: absolute;
+    height: 100%;
+    z-index: var(--z-sidebar);
+  }
+
+  .toggleBtn {
+    display: block;
+  }
+}

@@ -1,0 +1,179 @@
+.successBanner {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  color: #047857;
+  margin-bottom: var(--space-8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+.section {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-divider);
+  border-radius: 8px;
+  padding: var(--space-8);
+}
+
+.sectionHeader {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.sectionHeader h2 {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: 18px;
+}
+
+.sectionHeader p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.formGroup {
+  margin-bottom: var(--space-6);
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="url"],
+.formGroup input[type="number"],
+.formGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-divider);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 150ms ease;
+  font-family: var(--font-sans);
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.helpText {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+
+.infoValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-4);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-divider);
+}
+
+.actions button {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .settingsGrid {
+    gap: var(--space-4);
+  }
+
+  .section {
+    padding: var(--space-6);
+  }
+
+  .sectionHeader {
+    margin-bottom: var(--space-6);
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: request-manager-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - request-manager
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: request-manager-api
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      API_PORT: 3001
+      API_BASE_URL: http://localhost:3001
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_TLS: "false"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - request-manager
+    volumes:
+      - ./apps/api/src:/app/src
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: request-manager-worker
+    environment:
+      NODE_ENV: development
+      WORKER_PORT: 3002
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_TLS: "false"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - request-manager
+    volumes:
+      - ./apps/worker/src:/app/src
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: request-manager-web
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+    depends_on:
+      - api
+    networks:
+      - request-manager
+    volumes:
+      - ./apps/web/src:/app/src
+      - ./apps/web/public:/app/public
+
+volumes:
+  redis_data:
+
+networks:
+  request-manager:
+    driver: bridge

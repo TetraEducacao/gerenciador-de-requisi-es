@@ -1,0 +1,36 @@
+{
+  "name": "request-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Request Manager - Async HTTP request intermediary with queue management",
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "apps/worker",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/worker\"",
+    "dev:no-worker": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\"",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=apps/api && npm run build --workspace=apps/worker && npm run build --workspace=apps/web",
+    "start": "concurrently \"npm run start --workspace=apps/web\" \"npm run start --workspace=apps/api\" \"npm run start --workspace=apps/worker\"",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "build:api": "npm run build --workspace=packages/shared && npm run build --workspace=apps/api",
+    "start:api": "npm run start --workspace=apps/api",
+    "build:worker": "npm run build --workspace=packages/shared && npm run build --workspace=apps/worker",
+    "start:worker": "npm run start --workspace=apps/worker",
+    "build:web": "npm run build --workspace=packages/shared && npm run build --workspace=apps/web",
+    "start:web": "npm run start --workspace=apps/web",
+    "test": "node --import tsx --test apps/api/tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

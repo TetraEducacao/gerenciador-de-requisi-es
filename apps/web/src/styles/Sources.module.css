@@ -1,0 +1,251 @@
+.errorBanner {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  border-left: 4px solid #dc2626;
+}
+
+.successCard {
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  color: #d1fae5;
+}
+
+.successCard h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #d1fae5;
+}
+
+.successCard p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+}
+
+.keyContainer {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.keyContainer code {
+  flex: 1;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.note {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin: 16px 0;
+}
+
+.formCard {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.formCard h2 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #e2e8f0;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 10px 12px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.emptyState h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.emptyState p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.sourcesList {
+  display: grid;
+  gap: 16px;
+}
+
+.sourceCard {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.sourceCard:hover {
+  border-color: #475569;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.cardHeader h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+}
+
+.id {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge.active {
+  background: #064e3b;
+  color: #10b981;
+}
+
+.cardContent {
+  margin: 16px 0;
+  padding: 12px 0;
+  border-top: 1px solid #334155;
+  border-bottom: 1px solid #334155;
+}
+
+.apiUrl {
+  margin-bottom: 16px;
+}
+
+.apiUrl label {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.apiUrl code {
+  display: block;
+  background: #0f172a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  word-break: break-all;
+  color: #10b981;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.details > div {
+  font-size: 13px;
+}
+
+.label {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.instruction {
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+.instruction strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #f1f5f9;
+}
+
+.instruction code {
+  display: block;
+  font-size: 11px;
+  color: #10b981;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cardFooter {
+  padding-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
