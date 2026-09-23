@@ -21,6 +21,8 @@ coverage/
 .cache/
 *.tsbuildinfo
 .env.*
-!.env.example
 !.env.*.example
-.md
+*.md
+
+# Keep the root environment example local
+/.env.example
