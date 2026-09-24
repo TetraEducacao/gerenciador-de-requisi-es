@@ -5,7 +5,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import Redis from 'ioredis';
 import { getAppConfig, AppError, Logger, AuthenticationError, getRedisConfig } from 'request-manager-shared';
-import { registerAuthHook } from './middleware/auth.js';
+import { registerAuthHook, registerBodyTokenAuthHook } from './middleware/auth.js';
 import { registerJWTAuthHook } from './middleware/jwt-auth.js';
 import { registerDestinationRoutes } from './routes/destinations.js';
 import { registerApiKeyRoutes } from './routes/api-keys.js';
@@ -96,6 +96,9 @@ registerJWTAuthHook(fastify, '/admin/');
 
 // Public API routes use API Keys
 registerAuthHook(fastify, '/v1/requests');
+
+// Webhook routes validate api_token field from request body
+registerBodyTokenAuthHook(fastify, '/v1/requests');
 
 // ============================================================================
 // Admin Routes (Authenticated)

@@ -57,7 +57,6 @@ export interface AuthenticatedRequest extends FastifyRequest {
  * Middleware to validate API key from Authorization header
  * OR check if domain is in whitelist (no auth required)
  * OR check if token is in external tokens whitelist
- * OR check if api_token field exists in request body (from webhooks)
  * Usage: fastify.addHook('onRequest', authenticateRequest);
  */
 export async function authenticateRequest(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
@@ -77,22 +76,7 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
     }
   }
 
-  // Second, check if api_token field exists in body (from Guru/Asaas webhooks)
-  try {
-    const body = request.body as any;
-    if (body && body.api_token) {
-      const isExternalTokenValid = await getExternalTokensService().isTokenValid(body.api_token);
-      if (isExternalTokenValid) {
-        logger.debug('Request authorized with external token from body');
-        (request as any).isExternalToken = true;
-        return;
-      }
-    }
-  } catch (e) {
-    // Body might not be available yet, continue with other checks
-  }
-
-  // Third, check if domain is whitelisted
+  // Second, check if domain is whitelisted
   const requestDomain = extractDomainFromRequest(request);
   if (requestDomain) {
     const isAllowed = await getAllowedDomainsService().isDomainAllowed(requestDomain);
@@ -140,12 +124,52 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
 }
 
 /**
+ * Middleware to validate api_token from request body (executed after body parsing)
+ * Used by Guru, Asaas, and other webhook services that send token in payload
+ * Usage: fastify.addHook('preValidation', authenticateBodyToken);
+ */
+export async function authenticateBodyToken(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
+  // Skip if already authenticated
+  if ((request as any).isExternalToken || (request as any).isPublicDomain || (request as any).sourceId) {
+    return;
+  }
+
+  // Check if api_token field exists in body (from Guru/Asaas webhooks)
+  try {
+    const body = request.body as any;
+    if (body && body.api_token) {
+      const isExternalTokenValid = await getExternalTokensService().isTokenValid(body.api_token);
+      if (isExternalTokenValid) {
+        logger.debug('Request authorized with external token from body api_token field');
+        (request as any).isExternalToken = true;
+        return;
+      }
+    }
+  } catch (e) {
+    logger.debug('Error validating body token', e as Error);
+    // Continue - will be caught by onRequest auth checks
+  }
+}
+
+/**
  * Register authentication hook for specific routes
  */
 export function registerAuthHook(fastify: any, routePrefix: string): void {
   fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.url.startsWith(routePrefix)) {
       await authenticateRequest(request, reply);
+    }
+  });
+}
+
+/**
+ * Register body token authentication hook for webhook routes
+ * This runs after body parsing to validate api_token field
+ */
+export function registerBodyTokenAuthHook(fastify: any, routePrefix: string): void {
+  fastify.addHook('preValidation', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (request.url.startsWith(routePrefix)) {
+      await authenticateBodyToken(request, reply);
     }
   });
 }
