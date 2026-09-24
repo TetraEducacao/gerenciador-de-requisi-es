@@ -2,17 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { AppLayout } from '../components/AppLayout';
 import { PageHeader } from '../components/PageHeader';
 import { withAuth } from '../lib/withAuth';
+import { ExternalToken } from '../lib/api';
 import styles from '../styles/Destinations.module.css';
-
-interface ExternalToken {
-  id: string;
-  name: string;
-  token: string;
-  description?: string;
-  enabled: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 interface TokenListItem {
   id: string;
