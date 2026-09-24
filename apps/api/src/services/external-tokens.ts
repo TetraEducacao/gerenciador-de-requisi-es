@@ -31,13 +31,6 @@ export class ExternalTokensService {
   }
 
   /**
-   * Generate a random token
-   */
-  static generateToken(): string {
-    return crypto.randomBytes(32).toString('hex');
-  }
-
-  /**
    * Validate if a token is authorized
    */
   async isTokenValid(token: string): Promise<boolean> {
@@ -98,12 +91,15 @@ export class ExternalTokensService {
   /**
    * Create a new external token
    */
-  async createExternalToken(name: string, description?: string): Promise<ExternalToken> {
+  async createExternalToken(name: string, token: string, description?: string): Promise<ExternalToken> {
     if (!name || !name.trim()) {
       throw new ValidationError('Name is required');
     }
 
-    const token = ExternalTokensService.generateToken();
+    if (!token || !token.trim()) {
+      throw new ValidationError('Token is required');
+    }
+
     const now = new Date().toISOString();
 
     const { data, error } = await this.supabase
@@ -185,37 +181,6 @@ export class ExternalTokensService {
     logger.info('External token deleted', { id });
   }
 
-  /**
-   * Regenerate token for an existing entry
-   */
-  async regenerateToken(id: string): Promise<ExternalToken> {
-    const newToken = ExternalTokensService.generateToken();
-
-    const { data, error } = await this.supabase
-      .from('external_tokens')
-      .update({
-        token: newToken,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      logger.error('Failed to regenerate token', error);
-      throw new Error(`Failed to regenerate token: ${error.message}`);
-    }
-
-    if (!data) {
-      throw new NotFoundError('Token', id);
-    }
-
-    // Invalidate cache
-    this.cacheTimestamp = 0;
-
-    logger.info('Token regenerated', { id });
-    return data;
-  }
 }
 
 let externalTokensServiceInstance: ExternalTokensService | null = null;

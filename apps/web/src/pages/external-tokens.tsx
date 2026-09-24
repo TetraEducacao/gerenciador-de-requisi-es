@@ -21,7 +21,7 @@ function ExternalTokensPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '', token: '', description: '' });
 
   useEffect(() => {
     fetchTokens();
@@ -62,16 +62,15 @@ function ExternalTokensPage() {
         },
         body: JSON.stringify({
           name: formData.name,
+          token: formData.token,
           description: formData.description || null,
         }),
       });
 
       if (!response.ok) throw new Error('Failed to save');
-      const responseData = await response.json();
 
       if (method === 'POST') {
-        // Show newly created token
-        alert(`Token criado:\n\n${responseData.data.token}\n\nCopie e salve em local seguro!`);
+        alert('Token adicionado com sucesso!');
       }
 
       await fetchTokens();
@@ -85,7 +84,7 @@ function ExternalTokensPage() {
 
   const handleEdit = (token: TokenListItem) => {
     setEditingId(token.id);
-    setFormData({ name: token.name, description: token.description || '' });
+    setFormData({ name: token.name, token: '', description: token.description || '' });
     setShowForm(true);
   };
 
@@ -108,24 +107,6 @@ function ExternalTokensPage() {
     }
   };
 
-  const handleRegenerate = async (id: string) => {
-    if (!confirm('Gerar novo token? O token anterior deixará de funcionar.')) return;
-    try {
-      const { getAccessToken } = await import('../lib/supabase');
-      const token = await getAccessToken();
-      const response = await fetch(`${API_BASE}/admin/external-tokens/${id}/regenerate`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to regenerate');
-      const data = await response.json();
-      alert(`Novo token:\n\n${data.data.token}\n\nCopie e salve em local seguro!`);
-      await fetchTokens();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to regenerate token');
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('Deletar token?')) return;
     try {
@@ -145,7 +126,7 @@ function ExternalTokensPage() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', token: '', description: '' });
   };
 
   return (
@@ -176,6 +157,17 @@ function ExternalTokensPage() {
                 placeholder="Ex: Guru, n8n, Zapier"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Token *</label>
+              <input
+                type="password"
+                required
+                placeholder="Cole o token recebido da plataforma"
+                value={formData.token}
+                onChange={(e) => setFormData({ ...formData, token: e.target.value })}
               />
             </div>
 
@@ -233,9 +225,6 @@ function ExternalTokensPage() {
                 <div className={styles.actions}>
                   <button className="btn-secondary" onClick={() => handleEdit(tokenItem)}>
                     Editar
-                  </button>
-                  <button className="btn-secondary" onClick={() => handleRegenerate(tokenItem.id)}>
-                    Gerar novo
                   </button>
                   <button className="btn-danger" onClick={() => handleDelete(tokenItem.id)}>
                     Deletar

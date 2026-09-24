@@ -35,11 +35,11 @@ export async function registerExternalTokensRoutes(fastify: FastifyInstance): Pr
    * POST /admin/external-tokens
    * Create a new external token
    */
-  fastify.post<{ Body: { name: string; description?: string } }>(
+  fastify.post<{ Body: { name: string; token: string; description?: string } }>(
     '/admin/external-tokens',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { name, description } = request.body as { name: string; description?: string };
+        const { name, token, description } = request.body as { name: string; token: string; description?: string };
 
         if (!name) {
           return reply.code(400).send({
@@ -50,9 +50,18 @@ export async function registerExternalTokensRoutes(fastify: FastifyInstance): Pr
           });
         }
 
-        const token = await getExternalTokensService().createExternalToken(name, description);
+        if (!token) {
+          return reply.code(400).send({
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Token is required',
+            },
+          });
+        }
+
+        const createdToken = await getExternalTokensService().createExternalToken(name, token, description);
         return reply.code(201).send({
-          data: token,
+          data: createdToken,
         });
       } catch (error) {
         if (error instanceof AppError) {
@@ -106,41 +115,6 @@ export async function registerExternalTokensRoutes(fastify: FastifyInstance): Pr
           error: {
             code: 'INTERNAL_SERVER_ERROR',
             message: 'Failed to update external token',
-          },
-        });
-      }
-    }
-  );
-
-  /**
-   * POST /admin/external-tokens/:id/regenerate
-   * Regenerate token
-   */
-  fastify.post<{ Params: { id: string } }>(
-    '/admin/external-tokens/:id/regenerate',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = request.params as { id: string };
-
-        const token = await getExternalTokensService().regenerateToken(id);
-        return reply.send({
-          data: token,
-        });
-      } catch (error) {
-        if (error instanceof AppError) {
-          return reply.code(error.statusCode).send({
-            error: {
-              code: error.code,
-              message: error.message,
-            },
-          });
-        }
-
-        logger.error('Failed to regenerate token', error as Error);
-        return reply.code(500).send({
-          error: {
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'Failed to regenerate token',
           },
         });
       }
