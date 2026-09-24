@@ -1,13 +1,50 @@
 /**
  * Authentication middleware for Fastify routes.
  * Validates API keys from Authorization header.
+ * Optionally skips auth for domains in whitelist.
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { AuthenticationError, Logger } from 'request-manager-shared';
 import { getAuthService } from '../services/auth.js';
+import { getAllowedDomainsService } from '../services/allowed-domains.js';
 
 const logger = new Logger('AuthMiddleware');
+
+/**
+ * Extract domain from request origin or referer header
+ */
+function extractDomainFromRequest(request: FastifyRequest): string | null {
+  // Try Origin header first (for CORS requests)
+  const origin = request.headers.origin;
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      return url.hostname;
+    } catch (e) {
+      // Invalid URL, skip
+    }
+  }
+
+  // Try Referer header
+  const referer = request.headers.referer;
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      return url.hostname;
+    } catch (e) {
+      // Invalid URL, skip
+    }
+  }
+
+  // Try X-Forwarded-Host header (for proxied requests)
+  const forwardedHost = request.headers['x-forwarded-host'];
+  if (forwardedHost && typeof forwardedHost === 'string') {
+    return forwardedHost.split(',')[0].trim();
+  }
+
+  return null;
+}
 
 export interface AuthenticatedRequest extends FastifyRequest {
   sourceId: string;
@@ -17,13 +54,30 @@ export interface AuthenticatedRequest extends FastifyRequest {
 
 /**
  * Middleware to validate API key from Authorization header
+ * OR check if domain is in whitelist (no auth required)
  * Usage: fastify.addHook('onRequest', authenticateRequest);
  */
 export async function authenticateRequest(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
+  // First, check if domain is whitelisted
+  const requestDomain = extractDomainFromRequest(request);
+  if (requestDomain) {
+    const isAllowed = await getAllowedDomainsService().isDomainAllowed(requestDomain);
+    if (isAllowed) {
+      logger.debug('Request from whitelisted domain', { domain: requestDomain });
+      // Mark as public access
+      (request as any).isPublicDomain = true;
+      return;
+    }
+  }
+
+  // If not whitelisted, require API key authentication
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
-    logger.warn('Missing authorization header', { url: request.url });
+    logger.warn('Missing authorization header', {
+      url: request.url,
+      domain: requestDomain,
+    });
     throw new AuthenticationError('Missing Authorization header');
   }
 
