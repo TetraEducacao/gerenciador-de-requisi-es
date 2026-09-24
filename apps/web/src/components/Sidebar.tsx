@@ -16,6 +16,7 @@ const navItems: NavItem[] = [
   { label: 'Recepções', href: '/sources', icon: '🔌' },
   { label: 'Vínculos', href: '/reception-links', icon: '🔗' },
   { label: 'Destinos', href: '/destinations', icon: '🎯' },
+  { label: 'Domínios Públicos', href: '/allowed-domains', icon: '🔓' },
   { label: 'Chaves de API', href: '/api-keys', icon: '🔑' },
   { label: 'Configurações', href: '/settings', icon: '⚙️' },
 ];

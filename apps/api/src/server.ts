@@ -16,6 +16,7 @@ import { registerDashboardRoutes } from './routes/dashboard.js';
 import { registerAdminRequestRoutes } from './routes/admin-requests.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSettingsRoutes } from './routes/settings.js';
+import { registerAllowedDomainsRoutes } from './routes/allowed-domains.js';
 
 const config = getAppConfig();
 const logger = new Logger('API');
@@ -101,6 +102,7 @@ registerAuthHook(fastify, '/v1/requests');
 
 fastify.register(async (fastify) => {
   await registerSettingsRoutes(fastify, redis);
+  await registerAllowedDomainsRoutes(fastify);
   await registerDestinationRoutes(fastify, redis);
   await registerApiKeyRoutes(fastify);
   await registerSourceRoutes(fastify);
