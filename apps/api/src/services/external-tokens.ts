@@ -5,7 +5,6 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseConfig, Logger, ValidationError, NotFoundError } from 'request-manager-shared';
-import crypto from 'crypto';
 
 const logger = new Logger('ExternalTokensService');
 
