@@ -349,3 +349,42 @@ export async function getHealth(): Promise<HealthStatus> {
     };
   }
 }
+
+// ============================================================================
+// Allowed Domains
+
+export interface AllowedDomain {
+  id: string;
+  domain: string;
+  description?: string;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getAllowedDomains(): Promise<AllowedDomain[]> {
+  const data = await request<{ data: AllowedDomain[] }>('/admin/allowed-domains');
+  return data.data;
+}
+
+export async function createAllowedDomain(domain: string, description?: string): Promise<AllowedDomain> {
+  const result = await request<{ data: AllowedDomain }>('/admin/allowed-domains', {
+    method: 'POST',
+    body: JSON.stringify({ domain, description }),
+  });
+  return result.data;
+}
+
+export async function updateAllowedDomain(id: string, updates: Partial<AllowedDomain>): Promise<AllowedDomain> {
+  const result = await request<{ data: AllowedDomain }>(`/admin/allowed-domains/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  });
+  return result.data;
+}
+
+export async function deleteAllowedDomain(id: string): Promise<void> {
+  await request(`/admin/allowed-domains/${id}`, {
+    method: 'DELETE',
+  });
+}
