@@ -8,6 +8,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { AuthenticationError, Logger } from 'request-manager-shared';
 import { getAuthService } from '../services/auth.js';
 import { getAllowedDomainsService } from '../services/allowed-domains.js';
+import { getExternalTokensService } from '../services/external-tokens.js';
 
 const logger = new Logger('AuthMiddleware');
 
@@ -55,10 +56,27 @@ export interface AuthenticatedRequest extends FastifyRequest {
 /**
  * Middleware to validate API key from Authorization header
  * OR check if domain is in whitelist (no auth required)
+ * OR check if token is in external tokens whitelist
  * Usage: fastify.addHook('onRequest', authenticateRequest);
  */
 export async function authenticateRequest(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
-  // First, check if domain is whitelisted
+  const authHeader = request.headers.authorization;
+
+  // First, check if it's an external authorized token (Guru, n8n, etc)
+  if (authHeader) {
+    const parts = authHeader.split(' ');
+    if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+      const token = parts[1];
+      const isExternalTokenValid = await getExternalTokensService().isTokenValid(token);
+      if (isExternalTokenValid) {
+        logger.debug('Request authorized with external token');
+        (request as any).isExternalToken = true;
+        return;
+      }
+    }
+  }
+
+  // Second, check if domain is whitelisted
   const requestDomain = extractDomainFromRequest(request);
   if (requestDomain) {
     const isAllowed = await getAllowedDomainsService().isDomainAllowed(requestDomain);
@@ -71,7 +89,7 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
   }
 
   // If not whitelisted, require API key authentication
-  const authHeader = request.headers.authorization;
+  if (!authHeader) {
 
   if (!authHeader) {
     logger.warn('Missing authorization header', {
