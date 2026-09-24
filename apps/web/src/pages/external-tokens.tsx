@@ -76,7 +76,7 @@ function ExternalTokensPage() {
       await fetchTokens();
       setShowForm(false);
       setEditingId(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', token: '', description: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save token');
     }
