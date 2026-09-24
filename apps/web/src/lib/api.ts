@@ -171,6 +171,7 @@ export interface CreateDestinationInput {
   min_interval_ms: number;
   timeout_ms: number;
   max_attempts: number;
+  request_interval_ms?: number;
 }
 
 export async function getDestinations(): Promise<Destination[]> {
