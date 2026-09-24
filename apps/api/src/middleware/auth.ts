@@ -181,7 +181,7 @@ export function registerBodyTokenAuthHook(fastify: any, routePrefix: string): vo
   });
 
   // Final auth check - if still not authenticated, throw error
-  fastify.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.addHook('preHandler', async (request: FastifyRequest, _reply: FastifyReply) => {
     if (request.url.startsWith(routePrefix)) {
       const isAuthenticated =
         (request as any).isExternalToken || (request as any).isPublicDomain || (request as any).sourceId;
