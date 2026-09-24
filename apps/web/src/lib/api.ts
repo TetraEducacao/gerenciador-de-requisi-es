@@ -155,6 +155,7 @@ export interface Destination {
   min_interval_ms: number;
   timeout_ms: number;
   max_attempts: number;
+  request_interval_ms?: number;
   enabled: boolean;
   created_at: string;
   updated_at: string;
