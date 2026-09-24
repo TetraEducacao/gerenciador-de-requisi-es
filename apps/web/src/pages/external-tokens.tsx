@@ -22,7 +22,6 @@ function ExternalTokensPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTokens();
