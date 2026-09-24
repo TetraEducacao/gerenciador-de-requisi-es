@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "uuid": "^9.0.1"
+    "ioredis": "^5.4.1",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
