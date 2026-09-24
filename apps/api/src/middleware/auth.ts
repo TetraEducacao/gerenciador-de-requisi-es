@@ -90,8 +90,6 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
 
   // If not whitelisted, require API key authentication
   if (!authHeader) {
-
-  if (!authHeader) {
     logger.warn('Missing authorization header', {
       url: request.url,
       domain: requestDomain,
