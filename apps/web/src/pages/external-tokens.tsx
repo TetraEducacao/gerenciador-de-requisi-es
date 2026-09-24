@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { AppLayout } from '../components/AppLayout';
 import { PageHeader } from '../components/PageHeader';
 import { withAuth } from '../lib/withAuth';
-import { ExternalToken } from '../lib/api';
 import styles from '../styles/Destinations.module.css';
 
 interface TokenListItem {
