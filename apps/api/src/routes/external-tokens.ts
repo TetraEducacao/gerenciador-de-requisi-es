@@ -5,7 +5,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AppError, Logger } from 'request-manager-shared';
-import { getExternalTokensService, ExternalToken, ExternalTokensService } from '../services/external-tokens.js';
+import { getExternalTokensService, ExternalToken } from '../services/external-tokens.js';
 
 const logger = new Logger('ExternalTokensRoutes');
 
