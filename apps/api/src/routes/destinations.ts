@@ -4,12 +4,13 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import Redis from 'ioredis';
 import { DestinationConfig, AppError, Logger } from 'request-manager-shared';
 import { getDestinationService } from '../services/destinations.js';
 
 const logger = new Logger('DestinationRoutes');
 
-export async function registerDestinationRoutes(fastify: FastifyInstance): Promise<void> {
+export async function registerDestinationRoutes(fastify: FastifyInstance, redis?: Redis): Promise<void> {
   /**
    * GET /admin/destinations
    * List all destinations
@@ -73,6 +74,14 @@ export async function registerDestinationRoutes(fastify: FastifyInstance): Promi
 
       logger.debug('Creating destination', { payload });
       const destination = await getDestinationService().createDestination('admin', payload as DestinationConfig);
+
+      // Sync interval to Redis if configured
+      if (redis && destination.id && destination.request_interval_ms && destination.request_interval_ms > 0) {
+        const redisKey = `destination:${destination.id}:interval:ms`;
+        await redis.set(redisKey, destination.request_interval_ms.toString());
+        logger.debug('Synced destination interval to Redis', { destinationId: destination.id, interval: destination.request_interval_ms });
+      }
+
       return reply.code(201).send({
         data: destination,
       });
@@ -107,6 +116,20 @@ export async function registerDestinationRoutes(fastify: FastifyInstance): Promi
       const updates = request.body as Partial<DestinationConfig>;
 
       const destination = await getDestinationService().updateDestination(id, updates);
+
+      // Sync interval to Redis if configured
+      if (redis) {
+        const redisKey = `destination:${id}:interval:ms`;
+        if (destination.request_interval_ms && destination.request_interval_ms > 0) {
+          await redis.set(redisKey, destination.request_interval_ms.toString());
+          logger.debug('Synced destination interval to Redis', { destinationId: id, interval: destination.request_interval_ms });
+        } else {
+          // Clear from Redis if interval is 0 or undefined
+          await redis.del(redisKey);
+          logger.debug('Cleared destination interval from Redis', { destinationId: id });
+        }
+      }
+
       return reply.send({
         data: destination,
       });

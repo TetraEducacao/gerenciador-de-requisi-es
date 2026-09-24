@@ -9,6 +9,27 @@ import { createReconciliationService, ReconciliationService } from './services/r
 const logger = new Logger('Worker');
 const redisConfig = getRedisConfig();
 
+// Request processing interval by destination (configurable via Redis)
+// Each destination can have its own interval: destination:${destinationId}:interval:ms
+// Falls back to global interval if destination-specific one not set
+const getRequestInterval = async (destinationId: string): Promise<number> => {
+  try {
+    // Try destination-specific interval first
+    const destKey = `destination:${destinationId}:interval:ms`;
+    const destInterval = await redisClient.get(destKey);
+    if (destInterval) {
+      return parseInt(destInterval, 10);
+    }
+
+    // Fall back to global interval (for backwards compatibility)
+    const globalInterval = await redisClient.get('request:interval:ms');
+    return globalInterval ? parseInt(globalInterval, 10) : 0;
+  } catch (err) {
+    logger.error('Failed to get request interval', err as Error);
+    return 0;
+  }
+};
+
 // Use the same parsed connection settings as the API.
 const redisClient = new Redis({
   ...redisConfig,
@@ -26,6 +47,14 @@ const worker = new Worker(
 
       if (result.success) {
         logger.info('Job processed successfully', { jobId: job.id, requestId: job.data.requestId });
+
+        // Apply processing interval if configured (per destination or global)
+        const interval = await getRequestInterval(job.data.destinationId);
+        if (interval > 0) {
+          logger.debug('Waiting before next job', { interval, destinationId: job.data.destinationId, jobId: job.id });
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+
         return result;
       }
 

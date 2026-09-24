@@ -44,6 +44,7 @@ function DestinationsPage() {
         concurrency_limit: formData.concurrency_limit || 1,
         min_interval_ms: formData.min_interval_ms || 0,
         max_attempts: formData.max_attempts || 3,
+        request_interval_ms: formData.request_interval_ms,
         rate_limit_value: formData.rate_limit_value,
         rate_limit_unit: formData.rate_limit_unit,
       };
@@ -224,6 +225,20 @@ function DestinationsPage() {
               </div>
             )}
 
+            <div className={styles.formGroup}>
+              <label>Request Interval (ms)</label>
+              <input
+                type="number"
+                min="0"
+                max="60000"
+                value={formData.request_interval_ms || 0}
+                onChange={(e) => setFormData({ ...formData, request_interval_ms: parseInt(e.target.value) || 0 })}
+              />
+              <small style={{ display: 'block', marginTop: '4px', color: '#999' }}>
+                Wait between sending requests to this destination (0-60000ms). Leave as 0 for no delay.
+              </small>
+            </div>
+
             <div className={styles.formActions}>
               <button type="submit" className="btn-primary">
                 {editingId ? 'Update' : 'Create'} Destination
@@ -283,6 +298,12 @@ function DestinationsPage() {
                     <span className={styles.label}>Max Attempts</span>
                     <span className={styles.value}>{dest.max_attempts}</span>
                   </div>
+                  {dest.request_interval_ms !== undefined && dest.request_interval_ms > 0 && (
+                    <div className={styles.setting}>
+                      <span className={styles.label}>Request Interval</span>
+                      <span className={styles.value}>{dest.request_interval_ms}ms</span>
+                    </div>
+                  )}
                   {dest.rate_limit_value && (
                     <div className={styles.setting}>
                       <span className={styles.label}>Rate Limit</span>

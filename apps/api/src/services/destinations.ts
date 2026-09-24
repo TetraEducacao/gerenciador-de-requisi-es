@@ -71,6 +71,7 @@ export class DestinationService {
           concurrency_limit: destination.concurrency_limit || 5,
           min_interval_ms: destination.min_interval_ms || 0,
           max_attempts: destination.max_attempts || 3,
+          request_interval_ms: destination.request_interval_ms || null,
           enabled: destination.enabled !== false,
           created_at: now,
           updated_at: now,
@@ -195,6 +196,7 @@ export class DestinationService {
     if (updates.concurrency_limit !== undefined) updateData.concurrency_limit = updates.concurrency_limit;
     if (updates.min_interval_ms !== undefined) updateData.min_interval_ms = updates.min_interval_ms;
     if (updates.max_attempts !== undefined) updateData.max_attempts = updates.max_attempts;
+    if (updates.request_interval_ms !== undefined) updateData.request_interval_ms = updates.request_interval_ms;
     if (updates.enabled !== undefined) updateData.enabled = updates.enabled;
 
     const { data, error } = await this.supabase
@@ -255,6 +257,7 @@ export class DestinationService {
       concurrency_limit: db.concurrency_limit,
       min_interval_ms: db.min_interval_ms,
       max_attempts: db.max_attempts,
+      request_interval_ms: db.request_interval_ms,
       enabled: db.enabled,
       created_at: db.created_at,
       updated_at: db.updated_at,

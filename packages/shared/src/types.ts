@@ -77,6 +77,7 @@ export interface DestinationConfig {
   concurrency_limit?: number;
   min_interval_ms?: number;
   max_attempts?: number;
+  request_interval_ms?: number;
   enabled: boolean;
   created_at?: string;
   updated_at?: string;
@@ -118,6 +119,7 @@ export interface DbDestination {
   concurrency_limit: number;
   min_interval_ms: number;
   max_attempts: number;
+  request_interval_ms?: number;
   enabled: boolean;
   created_at: string;
   updated_at: string;

@@ -3,7 +3,8 @@ import './env.js';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import { getAppConfig, AppError, Logger, AuthenticationError } from 'request-manager-shared';
+import Redis from 'ioredis';
+import { getAppConfig, AppError, Logger, AuthenticationError, getRedisConfig } from 'request-manager-shared';
 import { registerAuthHook } from './middleware/auth.js';
 import { registerJWTAuthHook } from './middleware/jwt-auth.js';
 import { registerDestinationRoutes } from './routes/destinations.js';
@@ -14,9 +15,17 @@ import { registerRequestRoutes } from './routes/requests.js';
 import { registerDashboardRoutes } from './routes/dashboard.js';
 import { registerAdminRequestRoutes } from './routes/admin-requests.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerSettingsRoutes } from './routes/settings.js';
 
 const config = getAppConfig();
 const logger = new Logger('API');
+
+// Redis connection for shared state (settings, etc.)
+const redisConfig = getRedisConfig();
+const redis = new Redis({
+  ...redisConfig,
+  tls: redisConfig.tls ? {} : undefined,
+});
 
 const fastify = Fastify({
   logger: {
@@ -91,7 +100,8 @@ registerAuthHook(fastify, '/v1/requests');
 // ============================================================================
 
 fastify.register(async (fastify) => {
-  await registerDestinationRoutes(fastify);
+  await registerSettingsRoutes(fastify, redis);
+  await registerDestinationRoutes(fastify, redis);
   await registerApiKeyRoutes(fastify);
   await registerSourceRoutes(fastify);
   await registerReceptionDestinationRoutes(fastify);
