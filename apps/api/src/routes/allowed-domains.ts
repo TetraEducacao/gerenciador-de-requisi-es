@@ -39,7 +39,7 @@ export async function registerAllowedDomainsRoutes(fastify: FastifyInstance): Pr
     '/admin/allowed-domains',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { domain, description } = request.body;
+        const { domain, description } = request.body as { domain: string; description?: string };
 
         if (!domain) {
           return reply.code(400).send({
@@ -85,7 +85,7 @@ export async function registerAllowedDomainsRoutes(fastify: FastifyInstance): Pr
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = request.params as { id: string };
-        const updates = request.body;
+        const updates = request.body as Partial<AllowedDomain>;
 
         const domain = await getAllowedDomainsService().updateAllowedDomain(id, updates);
         return reply.send({
