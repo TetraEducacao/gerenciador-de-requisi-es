@@ -88,13 +88,20 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
     }
   }
 
-  // If not whitelisted, require API key authentication
+  // If not whitelisted and no auth header, check if it's a POST/PUT/PATCH
+  // (body token validation happens in preValidation hook)
   if (!authHeader) {
-    logger.warn('Missing authorization header', {
-      url: request.url,
-      domain: requestDomain,
-    });
-    throw new AuthenticationError('Missing Authorization header');
+    const method = request.method.toUpperCase();
+    if (!['POST', 'PUT', 'PATCH'].includes(method)) {
+      logger.warn('Missing authorization header', {
+        url: request.url,
+        domain: requestDomain,
+        method,
+      });
+      throw new AuthenticationError('Missing Authorization header');
+    }
+    // For POST/PUT/PATCH, allow preValidation hook to check body token
+    return;
   }
 
   const parts = authHeader.split(' ');
@@ -170,6 +177,19 @@ export function registerBodyTokenAuthHook(fastify: any, routePrefix: string): vo
   fastify.addHook('preValidation', async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.url.startsWith(routePrefix)) {
       await authenticateBodyToken(request, reply);
+    }
+  });
+
+  // Final auth check - if still not authenticated, throw error
+  fastify.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (request.url.startsWith(routePrefix)) {
+      const isAuthenticated =
+        (request as any).isExternalToken || (request as any).isPublicDomain || (request as any).sourceId;
+
+      if (!isAuthenticated) {
+        logger.warn('Request not authenticated after all checks', { url: request.url, method: request.method });
+        throw new AuthenticationError('Missing Authorization header or valid api_token');
+      }
     }
   });
 }
