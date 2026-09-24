@@ -146,7 +146,7 @@ export async function authenticateBodyToken(request: FastifyRequest, _reply: Fas
       }
     }
   } catch (e) {
-    logger.debug('Error validating body token', e as Error);
+    logger.debug('Error validating body token', { error: e instanceof Error ? e.message : String(e) });
     // Continue - will be caught by onRequest auth checks
   }
 }
