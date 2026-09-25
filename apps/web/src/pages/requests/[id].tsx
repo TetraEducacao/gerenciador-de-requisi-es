@@ -228,16 +228,18 @@ function RequestDetailPage() {
                 <div key={index} className={styles.attemptItem} style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #e0e0e0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <strong style={{ fontSize: '13px' }}>Tentativa #{attempt.attempt_number}</strong>
-                    <span style={{
-                      backgroundColor: attempt.http_status >= 200 && attempt.http_status < 300 ? '#ECFDF5' : '#FEF2F2',
-                      color: attempt.http_status >= 200 && attempt.http_status < 300 ? '#065F46' : '#991B1B',
-                      padding: '4px 12px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 'bold'
-                    }}>
-                      HTTP {attempt.http_status}
-                    </span>
+                    {attempt.http_status && (
+                      <span style={{
+                        backgroundColor: attempt.http_status >= 200 && attempt.http_status < 300 ? '#ECFDF5' : '#FEF2F2',
+                        color: attempt.http_status >= 200 && attempt.http_status < 300 ? '#065F46' : '#991B1B',
+                        padding: '4px 12px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
+                        HTTP {attempt.http_status}
+                      </span>
+                    )}
                   </div>
                   <div className={styles.infoGrid} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                     <div>
