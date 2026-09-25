@@ -133,6 +133,7 @@ export async function authenticateRequest(request: FastifyRequest, _reply: Fasti
 /**
  * Middleware to validate api_token from request body (executed after body parsing)
  * Used by Guru, Asaas, and other webhook services that send token in payload
+ * Also validates sentry-public_key from baggage header (for Sentry-monitored services)
  * Usage: fastify.addHook('preValidation', authenticateBodyToken);
  */
 export async function authenticateBodyToken(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
@@ -154,7 +155,25 @@ export async function authenticateBodyToken(request: FastifyRequest, _reply: Fas
     }
   } catch (e) {
     logger.debug('Error validating body token', { error: e instanceof Error ? e.message : String(e) });
-    // Continue - will be caught by onRequest auth checks
+  }
+
+  // Check if sentry-public_key exists in baggage header
+  try {
+    const baggage = request.headers.baggage;
+    if (baggage && typeof baggage === 'string') {
+      const sentryPublicKeyMatch = baggage.match(/sentry-public_key=([a-f0-9]+)/);
+      if (sentryPublicKeyMatch && sentryPublicKeyMatch[1]) {
+        const sentryPublicKey = sentryPublicKeyMatch[1];
+        const isExternalTokenValid = await getExternalTokensService().isTokenValid(sentryPublicKey);
+        if (isExternalTokenValid) {
+          logger.debug('Request authorized with sentry-public_key from baggage header');
+          (request as any).isExternalToken = true;
+          return;
+        }
+      }
+    }
+  } catch (e) {
+    logger.debug('Error validating sentry token', { error: e instanceof Error ? e.message : String(e) });
   }
 }
 
