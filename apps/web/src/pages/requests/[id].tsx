@@ -242,18 +242,24 @@ function RequestDetailPage() {
                     )}
                   </div>
                   <div className={styles.infoGrid} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                    <div>
-                      <small style={{ color: '#666' }}>Iniciado</small>
-                      <p style={{ marginTop: '3px', fontSize: '11px' }}>{new Date(attempt.started_at).toLocaleString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <small style={{ color: '#666' }}>Concluído</small>
-                      <p style={{ marginTop: '3px', fontSize: '11px' }}>{new Date(attempt.completed_at).toLocaleString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <small style={{ color: '#666' }}>Duração</small>
-                      <p style={{ marginTop: '3px', fontSize: '11px', fontWeight: '500' }}>{attempt.duration_ms}ms</p>
-                    </div>
+                    {attempt.started_at && (
+                      <div>
+                        <small style={{ color: '#666' }}>Iniciado</small>
+                        <p style={{ marginTop: '3px', fontSize: '11px' }}>{new Date(attempt.started_at).toLocaleString('pt-BR')}</p>
+                      </div>
+                    )}
+                    {attempt.completed_at && (
+                      <div>
+                        <small style={{ color: '#666' }}>Concluído</small>
+                        <p style={{ marginTop: '3px', fontSize: '11px' }}>{new Date(attempt.completed_at).toLocaleString('pt-BR')}</p>
+                      </div>
+                    )}
+                    {attempt.duration_ms && (
+                      <div>
+                        <small style={{ color: '#666' }}>Duração</small>
+                        <p style={{ marginTop: '3px', fontSize: '11px', fontWeight: '500' }}>{attempt.duration_ms}ms</p>
+                      </div>
+                    )}
                   </div>
                   {attempt.error_message && (
                     <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#FEF2F2', borderRadius: '3px', fontSize: '11px', color: '#991B1B' }}>
