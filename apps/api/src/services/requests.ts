@@ -72,12 +72,44 @@ export class RequestService {
     const requestId = uuidv4();
     const now = new Date().toISOString();
 
+    // Fetch source and destination names
+    let sourceName = 'Unknown';
+    let destinationName = 'Unknown';
+
+    try {
+      const { data: source } = await this.supabase
+        .from('sources')
+        .select('name')
+        .eq('id', sourceId)
+        .maybeSingle();
+      if (source?.name) {
+        sourceName = source.name;
+      }
+    } catch (e) {
+      logger.debug('Failed to fetch source name', { sourceId });
+    }
+
+    try {
+      const { data: dest } = await this.supabase
+        .from('destinations')
+        .select('name')
+        .eq('id', destinationId)
+        .maybeSingle();
+      if (dest?.name) {
+        destinationName = dest.name;
+      }
+    } catch (e) {
+      logger.debug('Failed to fetch destination name', { destinationId });
+    }
+
     // Step 1: Persist to database first
     const { error: dbError } = await this.supabase.from('requests').insert([
       {
         id: requestId,
         source_id: sourceId,
+        source_name: sourceName,
         destination_id: destinationId,
+        destination_name: destinationName,
         reception_id: sourceId,
         user_agent: userAgent || null,
         idempotency_key: idempotencyKey || null,
