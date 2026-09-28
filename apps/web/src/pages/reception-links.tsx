@@ -238,33 +238,46 @@ function ReceptionLinksPage() {
         </div>
       ) : (
         <div className={styles.linksList}>
-          {links.map((link) => (
-            <div key={link.id} className={styles.linkCard}>
+          {Object.entries(
+            links.reduce((acc: Record<string, ReceptionLink[]>, link) => {
+              if (!acc[link.sourceId]) acc[link.sourceId] = [];
+              acc[link.sourceId].push(link);
+              return acc;
+            }, {})
+          ).map(([sourceId, sourceLinks]) => (
+            <div key={sourceId} className={styles.linkCard}>
               <div className={styles.cardContent}>
                 <div className={styles.linkFlow}>
                   <div className={styles.flowItem}>
                     <span className={styles.label}>RECEPÇÃO</span>
-                    <span className={styles.value}>{link.sourceName}</span>
+                    <span className={styles.value}>{sourceLinks[0].sourceName}</span>
                   </div>
                   <span className={styles.arrow}>→</span>
-                  <div className={styles.flowItem}>
-                    <span className={styles.label}>DESTINO</span>
-                    <span className={styles.value}>{link.destinationName}</span>
+                  <div className={styles.destinationsList}>
+                    <span className={styles.label}>DESTINO(S)</span>
+                    <div className={styles.destItems}>
+                      {sourceLinks.map((link) => (
+                        <div key={link.id} className={styles.destItem}>
+                          <span>{link.destinationName}</span>
+                          <button
+                            className="btn-small-danger"
+                            onClick={() => handleDeleteLink(link.sourceId, link.destinationId)}
+                            title="Remover este destino"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className={styles.details}>
-                  <small>Criado em {new Date(link.createdAt).toLocaleDateString('pt-BR')}</small>
+                  <small>
+                    {sourceLinks.length} destino{sourceLinks.length !== 1 ? 's' : ''} configurado
+                    {sourceLinks.length !== 1 ? 's' : ''}
+                  </small>
                 </div>
-              </div>
-
-              <div className={styles.cardFooter}>
-                <button
-                  className="btn-danger"
-                  onClick={() => handleDeleteLink(link.sourceId, link.destinationId)}
-                >
-                  Remover
-                </button>
               </div>
             </div>
           ))}

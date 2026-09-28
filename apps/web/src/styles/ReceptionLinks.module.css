@@ -161,6 +161,34 @@
   justify-content: flex-end;
 }
 
+.destinationsList {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.destItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.destItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.destItem span {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
 @media (max-width: 640px) {
   .formRow {
     grid-template-columns: 1fr;

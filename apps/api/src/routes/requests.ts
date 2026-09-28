@@ -27,13 +27,17 @@ export async function registerRequestRoutes(fastify: FastifyInstance): Promise<v
       const options = isEnvelope ? body as CreateRequestPayload : undefined;
       const payload = isEnvelope ? options!.payload : body;
 
-      // Get destination from reception-destination mapping
-      let destinationId: string | null | undefined = options?.destination_id;
+      // Get destinations from reception-destination mapping
+      let destinationIds: string[] = [];
 
-      if (!destinationId) {
-        destinationId = await getReceptionDestinationService().getDestinationForReception(sourceId);
+      if (options?.destination_id) {
+        // If explicitly specified in payload, use that single destination
+        destinationIds = [options.destination_id];
+      } else {
+        // Otherwise get all configured destinations for this reception
+        destinationIds = await getReceptionDestinationService().getDestinationsForReception(sourceId);
 
-        if (!destinationId) {
+        if (destinationIds.length === 0) {
           return reply.code(400).send({
             error: {
               code: 'MISSING_DESTINATION',
@@ -43,18 +47,26 @@ export async function registerRequestRoutes(fastify: FastifyInstance): Promise<v
         }
       }
 
-      const result = await getRequestService().createAndEnqueueRequest(
-        sourceId,
-        destinationId,
-        payload,
-        options?.headers,
-        options?.method,
-        options?.content_type ?? request.headers['content-type'],
-        options?.idempotency_key,
-        request.headers['user-agent'] as string | undefined
+      // Create and enqueue requests for all destinations
+      const results = await Promise.all(
+        destinationIds.map((destId) =>
+          getRequestService().createAndEnqueueRequest(
+            sourceId,
+            destId,
+            payload,
+            options?.headers,
+            options?.method,
+            options?.content_type ?? request.headers['content-type'],
+            options?.idempotency_key,
+            request.headers['user-agent'] as string | undefined
+          )
+        )
       );
 
-      return reply.code(202).send(result);
+      return reply.code(202).send({
+        data: results,
+        message: `Request enqueued for ${results.length} destination(s)`,
+      });
     } catch (error) {
       if (error instanceof AppError) {
         return reply.code(error.statusCode).send({
