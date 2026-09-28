@@ -136,12 +136,13 @@ function ReceptionLinksPage() {
     }
   };
 
-  const handleDeleteLink = async (sourceId: string) => {
+  const handleDeleteLink = async (sourceId: string, destinationId: string) => {
     if (!confirm('Tem certeza que quer remover este vínculo?')) return;
 
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE}/admin/reception-destinations/${sourceId}`, {
+      const url = `${API_BASE}/admin/reception-destinations/${sourceId}?destinationId=${destinationId}`;
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -260,7 +261,7 @@ function ReceptionLinksPage() {
               <div className={styles.cardFooter}>
                 <button
                   className="btn-danger"
-                  onClick={() => handleDeleteLink(link.sourceId)}
+                  onClick={() => handleDeleteLink(link.sourceId, link.destinationId)}
                 >
                   Remover
                 </button>

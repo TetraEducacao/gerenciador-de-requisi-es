@@ -30,21 +30,22 @@ export class ReceptionDestinationService {
   }
 
   /**
-   * Link a reception to a destination
+   * Link a reception to a destination (allows multiple destinations per reception)
    */
   async linkReceptionToDestination(sourceId: string, destinationId: string): Promise<void> {
     const { error } = await this.supabase
       .from('reception_destinations')
-      .upsert(
-        {
-          source_id: sourceId,
-          destination_id: destinationId,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'source_id' }
-      );
+      .insert({
+        source_id: sourceId,
+        destination_id: destinationId,
+      });
 
     if (error) {
+      // If duplicate, it's okay - just means it's already linked
+      if (error.code === '23505') {
+        logger.debug('Reception-destination link already exists', { sourceId, destinationId });
+        return;
+      }
       logger.error('Failed to link reception to destination', error);
       throw new Error(`Failed to link reception: ${error.message}`);
     }
@@ -53,21 +54,28 @@ export class ReceptionDestinationService {
   }
 
   /**
-   * Get destination for a reception
+   * Get all destinations for a reception
    */
-  async getDestinationForReception(sourceId: string): Promise<string | null> {
+  async getDestinationsForReception(sourceId: string): Promise<string[]> {
     const { data, error } = await this.supabase
       .from('reception_destinations')
       .select('destination_id')
-      .eq('source_id', sourceId)
-      .maybeSingle();
+      .eq('source_id', sourceId);
 
     if (error) {
-      logger.error('Failed to get destination for reception', error);
-      throw new Error(`Failed to get destination: ${error.message}`);
+      logger.error('Failed to get destinations for reception', error);
+      throw new Error(`Failed to get destinations: ${error.message}`);
     }
 
-    return data?.destination_id || null;
+    return (data || []).map((row) => row.destination_id);
+  }
+
+  /**
+   * Get first destination for a reception (for backward compatibility)
+   */
+  async getDestinationForReception(sourceId: string): Promise<string | null> {
+    const destinations = await this.getDestinationsForReception(sourceId);
+    return destinations.length > 0 ? destinations[0] : null;
   }
 
   /**
@@ -100,20 +108,26 @@ export class ReceptionDestinationService {
   }
 
   /**
-   * Remove a reception-destination link
+   * Remove a specific reception-destination link
    */
-  async removeMapping(sourceId: string): Promise<void> {
-    const { error } = await this.supabase
+  async removeMapping(sourceId: string, destinationId?: string): Promise<void> {
+    let query = this.supabase
       .from('reception_destinations')
       .delete()
       .eq('source_id', sourceId);
+
+    if (destinationId) {
+      query = query.eq('destination_id', destinationId);
+    }
+
+    const { error } = await query;
 
     if (error) {
       logger.error('Failed to remove mapping', error);
       throw new Error(`Failed to remove mapping: ${error.message}`);
     }
 
-    logger.info('Reception-destination link removed', { sourceId });
+    logger.info('Reception-destination link removed', { sourceId, destinationId });
   }
 }
 

@@ -116,14 +116,16 @@ export async function registerReceptionDestinationRoutes(fastify: FastifyInstanc
   /**
    * DELETE /admin/reception-destinations/:sourceId
    * Remove a reception-destination link
+   * Query: ?destinationId=<id> (optional - if provided, removes only that destination)
    */
   fastify.delete(
     '/admin/reception-destinations/:sourceId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { sourceId } = request.params as { sourceId: string };
+        const { destinationId } = request.query as { destinationId?: string };
 
-        await getReceptionDestinationService().removeMapping(sourceId);
+        await getReceptionDestinationService().removeMapping(sourceId, destinationId);
 
         return reply.code(204).send();
       } catch (error) {
