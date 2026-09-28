@@ -38,32 +38,41 @@ export class RequestProcessor {
 
     logger.info('Processing request', { requestId, destinationId });
 
-    // Fetch destination config
-      const { data: destination, error: destError } = await this.supabase
-        .from('destinations')
-        .select('*')
-        .eq('id', destinationId)
-        .single();
+    // Fetch destination config and request reception_id
+    const { data: destination, error: destError } = await this.supabase
+      .from('destinations')
+      .select('*')
+      .eq('id', destinationId)
+      .single();
 
-      if (destError || !destination) {
-        logger.error('Destination not found', destError || new Error('Destination not found'), { requestId, destinationId });
-        return {
-          success: false,
-          error: `Destination ${destinationId} not found`,
-          duration: 0,
-          retryable: false,
-        };
-      }
+    if (destError || !destination) {
+      logger.error('Destination not found', destError || new Error('Destination not found'), { requestId, destinationId });
+      return {
+        success: false,
+        error: `Destination ${destinationId} not found`,
+        duration: 0,
+        retryable: false,
+      };
+    }
 
-      if (!destination.enabled) {
-        logger.warn('Destination is disabled', { requestId, destinationId });
-        return {
-          success: false,
-          error: 'Destination is disabled',
-          duration: 0,
-          retryable: false,
-        };
-      }
+    if (!destination.enabled) {
+      logger.warn('Destination is disabled', { requestId, destinationId });
+      return {
+        success: false,
+        error: 'Destination is disabled',
+        duration: 0,
+        retryable: false,
+      };
+    }
+
+    // Fetch reception_id from request
+    const { data: requestData } = await this.supabase
+      .from('requests')
+      .select('reception_id')
+      .eq('id', requestId)
+      .single();
+
+    const receptionId = requestData?.reception_id;
 
       // Check rate limiting and concurrency
       let concurrencyAcquired = false;
@@ -113,6 +122,11 @@ export class RequestProcessor {
           ...destination.headers,
           ...headers,
         };
+
+        // Add reception ID header if available
+        if (receptionId) {
+          requestHeaders['X-Reception-ID'] = receptionId;
+        }
 
         const startTime = Date.now();
 

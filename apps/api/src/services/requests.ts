@@ -77,6 +77,7 @@ export class RequestService {
         id: requestId,
         source_id: sourceId,
         destination_id: destinationId,
+        reception_id: sourceId,
         idempotency_key: idempotencyKey || null,
         payload,
         content_type: contentType || 'application/json',
