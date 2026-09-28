@@ -96,10 +96,10 @@ export class FilterRulesService {
 
     // Validate headers
     if (obj.headers !== undefined) {
-      if (typeof obj.headers !== 'object' || Array.isArray(obj.headers)) {
+      if (obj.headers === null || typeof obj.headers !== 'object' || Array.isArray(obj.headers)) {
         return { valid: false, error: 'headers must be an object' };
       }
-      for (const [key, value] of Object.entries(obj.headers)) {
+      for (const [key, value] of Object.entries(obj.headers as Record<string, unknown>)) {
         if (typeof value !== 'string') {
           return { valid: false, error: `header value for "${key}" must be a string` };
         }

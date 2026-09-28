@@ -83,7 +83,7 @@ export class ReceptionDestinationService {
    */
   async getDestinationForReception(sourceId: string): Promise<string | null> {
     const destinations = await this.getDestinationsForReception(sourceId);
-    return destinations.length > 0 ? destinations[0] : null;
+    return destinations.length > 0 ? destinations[0].destination_id : null;
   }
 
   /**
