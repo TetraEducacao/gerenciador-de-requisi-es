@@ -72,18 +72,10 @@ export class ReceptionDestinationService {
       throw new Error(`Failed to get destinations: ${error.message}`);
     }
 
-    return (data || []).map((row) => ({
+    return (data || []).map((row: any) => ({
       destination_id: row.destination_id,
       filter_rules: row.filter_rules,
     }));
-  }
-
-  /**
-   * Get destination IDs only (for backward compatibility)
-   */
-  async getDestinationIdsForReception(sourceId: string): Promise<string[]> {
-    const destinations = await this.getDestinationsForReception(sourceId);
-    return destinations.map((d) => d.destination_id);
   }
 
   /**

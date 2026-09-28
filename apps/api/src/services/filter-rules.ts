@@ -108,7 +108,7 @@ export class FilterRulesService {
 
     // Validate payload
     if (obj.payload !== undefined) {
-      if (typeof obj.payload !== 'object' || Array.isArray(obj.payload)) {
+      if (obj.payload === null || typeof obj.payload !== 'object' || Array.isArray(obj.payload)) {
         return { valid: false, error: 'payload must be an object' };
       }
     }
