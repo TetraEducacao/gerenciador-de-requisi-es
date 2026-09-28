@@ -7,6 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AppError, CreateRequestPayload, Logger } from 'request-manager-shared';
 import { getRequestService } from '../services/requests.js';
 import { getReceptionDestinationService } from '../services/reception-destinations.js';
+import { getFilterRulesService } from '../services/filter-rules.js';
 
 const logger = new Logger('RequestRoutes');
 
@@ -28,16 +29,16 @@ export async function registerRequestRoutes(fastify: FastifyInstance): Promise<v
       const payload = isEnvelope ? options!.payload : body;
 
       // Get destinations from reception-destination mapping
-      let destinationIds: string[] = [];
+      let destinationConfigs: Array<{ destination_id: string; filter_rules?: Record<string, unknown> }> = [];
 
       if (options?.destination_id) {
         // If explicitly specified in payload, use that single destination
-        destinationIds = [options.destination_id];
+        destinationConfigs = [{ destination_id: options.destination_id }];
       } else {
         // Otherwise get all configured destinations for this reception
-        destinationIds = await getReceptionDestinationService().getDestinationsForReception(sourceId);
+        destinationConfigs = await getReceptionDestinationService().getDestinationsForReception(sourceId);
 
-        if (destinationIds.length === 0) {
+        if (destinationConfigs.length === 0) {
           return reply.code(400).send({
             error: {
               code: 'MISSING_DESTINATION',
@@ -47,18 +48,53 @@ export async function registerRequestRoutes(fastify: FastifyInstance): Promise<v
         }
       }
 
-      // Create and enqueue requests for all destinations
+      // Filter destinations based on rules
+      const userAgent = request.headers['user-agent'] as string | undefined;
+      const filterRulesService = getFilterRulesService();
+
+      const filteredDestinations = destinationConfigs.filter((config) => {
+        const matches = filterRulesService.matchesFilter(
+          config.filter_rules,
+          userAgent,
+          request.headers as Record<string, string>,
+          payload
+        );
+
+        if (!matches) {
+          logger.debug('Webhook filtered out for destination', {
+            sourceId,
+            destinationId: config.destination_id,
+            filterRules: config.filter_rules,
+          });
+        }
+
+        return matches;
+      });
+
+      // If all destinations were filtered out, still return 202 but with message
+      if (filteredDestinations.length === 0) {
+        logger.info('Webhook filtered out by all destination rules', {
+          sourceId,
+          totalDestinations: destinationConfigs.length,
+        });
+        return reply.code(202).send({
+          data: [],
+          message: 'Request did not match any destination filters',
+        });
+      }
+
+      // Create and enqueue requests for filtered destinations
       const results = await Promise.all(
-        destinationIds.map((destId) =>
+        filteredDestinations.map((config) =>
           getRequestService().createAndEnqueueRequest(
             sourceId,
-            destId,
+            config.destination_id,
             payload,
             options?.headers,
             options?.method,
             options?.content_type ?? request.headers['content-type'],
             options?.idempotency_key,
-            request.headers['user-agent'] as string | undefined
+            userAgent
           )
         )
       );

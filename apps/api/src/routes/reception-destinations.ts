@@ -6,6 +6,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { Logger } from 'request-manager-shared';
 import { getReceptionDestinationService } from '../services/reception-destinations.js';
 import { getDestinationService } from '../services/destinations.js';
+import { getFilterRulesService } from '../services/filter-rules.js';
 
 const logger = new Logger('ReceptionDestinationRoutes');
 
@@ -134,6 +135,52 @@ export async function registerReceptionDestinationRoutes(fastify: FastifyInstanc
           error: {
             code: 'INTERNAL_SERVER_ERROR',
             message: 'Failed to remove mapping',
+          },
+        });
+      }
+    }
+  );
+
+  /**
+   * PUT /admin/reception-destinations/:sourceId/:destinationId/filter-rules
+   * Update filter rules for a reception-destination mapping
+   */
+  fastify.put(
+    '/admin/reception-destinations/:sourceId/:destinationId/filter-rules',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { sourceId, destinationId } = request.params as { sourceId: string; destinationId: string };
+        const { filter_rules } = request.body as { filter_rules?: Record<string, unknown> };
+
+        // Validate filter rules if provided
+        if (filter_rules !== undefined) {
+          const validation = getFilterRulesService().validateFilterRules(filter_rules);
+          if (!validation.valid) {
+            return reply.code(400).send({
+              error: {
+                code: 'VALIDATION_ERROR',
+                message: validation.error,
+              },
+            });
+          }
+        }
+
+        await getReceptionDestinationService().updateFilterRules(sourceId, destinationId, filter_rules || null);
+
+        return reply.code(200).send({
+          data: {
+            sourceId,
+            destinationId,
+            filter_rules,
+            message: 'Filter rules updated',
+          },
+        });
+      } catch (error) {
+        logger.error('Failed to update filter rules', error as Error);
+        return reply.code(500).send({
+          error: {
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to update filter rules',
           },
         });
       }

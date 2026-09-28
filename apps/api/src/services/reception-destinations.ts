@@ -54,12 +54,17 @@ export class ReceptionDestinationService {
   }
 
   /**
-   * Get all destinations for a reception
+   * Get all destinations for a reception with their filter rules
    */
-  async getDestinationsForReception(sourceId: string): Promise<string[]> {
+  async getDestinationsForReception(sourceId: string): Promise<
+    Array<{
+      destination_id: string;
+      filter_rules?: Record<string, unknown>;
+    }>
+  > {
     const { data, error } = await this.supabase
       .from('reception_destinations')
-      .select('destination_id')
+      .select('destination_id, filter_rules')
       .eq('source_id', sourceId);
 
     if (error) {
@@ -67,7 +72,18 @@ export class ReceptionDestinationService {
       throw new Error(`Failed to get destinations: ${error.message}`);
     }
 
-    return (data || []).map((row) => row.destination_id);
+    return (data || []).map((row) => ({
+      destination_id: row.destination_id,
+      filter_rules: row.filter_rules,
+    }));
+  }
+
+  /**
+   * Get destination IDs only (for backward compatibility)
+   */
+  async getDestinationIdsForReception(sourceId: string): Promise<string[]> {
+    const destinations = await this.getDestinationsForReception(sourceId);
+    return destinations.map((d) => d.destination_id);
   }
 
   /**
@@ -128,6 +144,27 @@ export class ReceptionDestinationService {
     }
 
     logger.info('Reception-destination link removed', { sourceId, destinationId });
+  }
+
+  /**
+   * Update filter rules for a reception-destination mapping
+   */
+  async updateFilterRules(sourceId: string, destinationId: string, filterRules: Record<string, unknown> | null): Promise<void> {
+    const { error } = await this.supabase
+      .from('reception_destinations')
+      .update({
+        filter_rules: filterRules,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('source_id', sourceId)
+      .eq('destination_id', destinationId);
+
+    if (error) {
+      logger.error('Failed to update filter rules', error);
+      throw new Error(`Failed to update filter rules: ${error.message}`);
+    }
+
+    logger.info('Filter rules updated', { sourceId, destinationId });
   }
 }
 
