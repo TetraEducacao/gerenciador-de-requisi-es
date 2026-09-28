@@ -11,6 +11,11 @@ interface ReceptionLink {
   destinationId: string;
   destinationName: string;
   createdAt: string;
+  filterRules?: {
+    user_agent?: string;
+    headers?: Record<string, string>;
+    payload?: Record<string, unknown>;
+  };
 }
 
 interface Reception {
@@ -34,6 +39,17 @@ function ReceptionLinksPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedReception, setSelectedReception] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filteringLink, setFilteringLink] = useState<ReceptionLink | null>(null);
+  const [filterForm, setFilterForm] = useState({
+    user_agent: '',
+    headers: {} as Record<string, string>,
+    payload: {} as Record<string, unknown>,
+    headerKey: '',
+    headerValue: '',
+    payloadKey: '',
+    payloadValue: '',
+  });
 
   useEffect(() => {
     fetchData();
@@ -154,8 +170,192 @@ function ReceptionLinksPage() {
     }
   };
 
+  const handleOpenFilterModal = (link: ReceptionLink) => {
+    setFilteringLink(link);
+    setFilterForm({
+      user_agent: link.filterRules?.user_agent || '',
+      headers: link.filterRules?.headers || {},
+      payload: link.filterRules?.payload || {},
+      headerKey: '',
+      headerValue: '',
+      payloadKey: '',
+      payloadValue: '',
+    });
+    setShowFilterModal(true);
+  };
+
+  const handleSaveFilters = async () => {
+    if (!filteringLink) return;
+
+    try {
+      const token = await getToken();
+      const filterRules = {
+        ...(filterForm.user_agent && { user_agent: filterForm.user_agent }),
+        ...(Object.keys(filterForm.headers).length > 0 && { headers: filterForm.headers }),
+        ...(Object.keys(filterForm.payload).length > 0 && { payload: filterForm.payload }),
+      };
+
+      const response = await fetch(
+        `${API_BASE}/admin/reception-destinations/${filteringLink.sourceId}/${filteringLink.destinationId}/filter-rules`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filter_rules: Object.keys(filterRules).length > 0 ? filterRules : null }),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err?.error?.message || 'Failed to save filters');
+      }
+
+      setShowFilterModal(false);
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save filters');
+    }
+  };
+
   return (
     <AppLayout>
+      {showFilterModal && filteringLink && (
+        <div className={styles.modalOverlay} onClick={() => setShowFilterModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Configurar Filtros</h2>
+              <button className="btn-secondary" onClick={() => setShowFilterModal(false)}>✕</button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <p style={{ marginBottom: '16px', color: '#94a3b8', fontSize: '13px' }}>
+                Defina condições para este destino receber webhooks
+              </p>
+
+              {/* User-Agent Filter */}
+              <div className={styles.filterSection}>
+                <label>User-Agent (opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: GuzzleHttp/7, axios/1.20.0"
+                  value={filterForm.user_agent}
+                  onChange={(e) => setFilterForm({ ...filterForm, user_agent: e.target.value })}
+                />
+              </div>
+
+              {/* Headers Filter */}
+              <div className={styles.filterSection}>
+                <label>Headers (opcional)</label>
+                <div className={styles.keyValueList}>
+                  {Object.entries(filterForm.headers).map(([key, value]) => (
+                    <div key={key} className={styles.keyValueItem}>
+                      <span>{key}: {value}</span>
+                      <button
+                        className="btn-small-danger"
+                        onClick={() => {
+                          const newHeaders = { ...filterForm.headers };
+                          delete newHeaders[key];
+                          setFilterForm({ ...filterForm, headers: newHeaders });
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="Nome do header"
+                    value={filterForm.headerKey}
+                    onChange={(e) => setFilterForm({ ...filterForm, headerKey: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Valor"
+                    value={filterForm.headerValue}
+                    onChange={(e) => setFilterForm({ ...filterForm, headerValue: e.target.value })}
+                  />
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      if (filterForm.headerKey && filterForm.headerValue) {
+                        setFilterForm({
+                          ...filterForm,
+                          headers: { ...filterForm.headers, [filterForm.headerKey]: filterForm.headerValue },
+                          headerKey: '',
+                          headerValue: '',
+                        });
+                      }
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Payload Filter */}
+              <div className={styles.filterSection}>
+                <label>Payload (opcional)</label>
+                <div className={styles.keyValueList}>
+                  {Object.entries(filterForm.payload).map(([key, value]) => (
+                    <div key={key} className={styles.keyValueItem}>
+                      <span>{key}: {JSON.stringify(value)}</span>
+                      <button
+                        className="btn-small-danger"
+                        onClick={() => {
+                          const newPayload = { ...filterForm.payload };
+                          delete newPayload[key];
+                          setFilterForm({ ...filterForm, payload: newPayload });
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="Campo (ex: status, object)"
+                    value={filterForm.payloadKey}
+                    onChange={(e) => setFilterForm({ ...filterForm, payloadKey: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Valor (ex: PAID, order)"
+                    value={filterForm.payloadValue}
+                    onChange={(e) => setFilterForm({ ...filterForm, payloadValue: e.target.value })}
+                  />
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      if (filterForm.payloadKey && filterForm.payloadValue) {
+                        setFilterForm({
+                          ...filterForm,
+                          payload: { ...filterForm.payload, [filterForm.payloadKey]: filterForm.payloadValue },
+                          payloadKey: '',
+                          payloadValue: '',
+                        });
+                      }
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className="btn-secondary" onClick={() => setShowFilterModal(false)}>Cancelar</button>
+              <button className="btn-primary" onClick={handleSaveFilters}>Salvar Filtros</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PageHeader
         title="Vínculos de Recepção"
         description="Configure para onde cada recepção deve encaminhar as requisições"
@@ -258,14 +458,29 @@ function ReceptionLinksPage() {
                     <div className={styles.destItems}>
                       {sourceLinks.map((link) => (
                         <div key={link.id} className={styles.destItem}>
-                          <span>{link.destinationName}</span>
-                          <button
-                            className="btn-small-danger"
-                            onClick={() => handleDeleteLink(link.sourceId, link.destinationId)}
-                            title="Remover este destino"
-                          >
-                            ✕
-                          </button>
+                          <div style={{ flex: 1 }}>
+                            <span>{link.destinationName}</span>
+                            {link.filterRules && Object.keys(link.filterRules).length > 0 && (
+                              <div className={styles.filterBadge}>🔍 Filtrado</div>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              className="btn-small-danger"
+                              onClick={() => handleOpenFilterModal(link)}
+                              title="Configurar filtros"
+                              style={{ background: 'transparent', color: '#3b82f6', fontSize: '11px' }}
+                            >
+                              ⚙️
+                            </button>
+                            <button
+                              className="btn-small-danger"
+                              onClick={() => handleDeleteLink(link.sourceId, link.destinationId)}
+                              title="Remover este destino"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
