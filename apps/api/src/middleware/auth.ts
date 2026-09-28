@@ -175,6 +175,21 @@ export async function authenticateBodyToken(request: FastifyRequest, _reply: Fas
   } catch (e) {
     logger.debug('Error validating sentry token', { error: e instanceof Error ? e.message : String(e) });
   }
+
+  // Check if user-agent header is a known identifier (for services like GuzzleHttp)
+  try {
+    const userAgent = request.headers['user-agent'];
+    if (userAgent && typeof userAgent === 'string') {
+      const isExternalTokenValid = await getExternalTokensService().isTokenValid(userAgent);
+      if (isExternalTokenValid) {
+        logger.debug('Request authorized with user-agent', { userAgent });
+        (request as any).isExternalToken = true;
+        return;
+      }
+    }
+  } catch (e) {
+    logger.debug('Error validating user-agent token', { error: e instanceof Error ? e.message : String(e) });
+  }
 }
 
 /**
