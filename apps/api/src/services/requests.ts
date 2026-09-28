@@ -38,7 +38,8 @@ export class RequestService {
     headers?: Record<string, string>,
     method?: string,
     contentType?: string,
-    idempotencyKey?: string
+    idempotencyKey?: string,
+    userAgent?: string
   ): Promise<{
     requestId: string;
     status: string;
@@ -78,6 +79,7 @@ export class RequestService {
         source_id: sourceId,
         destination_id: destinationId,
         reception_id: sourceId,
+        user_agent: userAgent || null,
         idempotency_key: idempotencyKey || null,
         payload,
         content_type: contentType || 'application/json',

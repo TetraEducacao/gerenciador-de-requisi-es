@@ -50,7 +50,8 @@ export async function registerRequestRoutes(fastify: FastifyInstance): Promise<v
         options?.headers,
         options?.method,
         options?.content_type ?? request.headers['content-type'],
-        options?.idempotency_key
+        options?.idempotency_key,
+        request.headers['user-agent'] as string | undefined
       );
 
       return reply.code(202).send(result);

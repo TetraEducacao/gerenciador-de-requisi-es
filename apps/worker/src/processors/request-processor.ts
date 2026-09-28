@@ -65,14 +65,15 @@ export class RequestProcessor {
       };
     }
 
-    // Fetch reception_id from request
+    // Fetch reception_id and user_agent from request
     const { data: requestData } = await this.supabase
       .from('requests')
-      .select('reception_id')
+      .select('reception_id, user_agent')
       .eq('id', requestId)
       .single();
 
     const receptionId = requestData?.reception_id;
+    const userAgent = requestData?.user_agent;
 
       // Check rate limiting and concurrency
       let concurrencyAcquired = false;
@@ -126,6 +127,11 @@ export class RequestProcessor {
         // Add reception ID header if available
         if (receptionId) {
           requestHeaders['X-Reception-ID'] = receptionId;
+        }
+
+        // Add reception user-agent header if available
+        if (userAgent) {
+          requestHeaders['X-Reception-UserAgent'] = userAgent;
         }
 
         const startTime = Date.now();
