@@ -95,11 +95,12 @@ export class ReceptionDestinationService {
       sourceId: string;
       destinationId: string;
       createdAt: string;
+      filterRules: Record<string, unknown> | null;
     }>
   > {
     const { data, error } = await this.supabase
       .from('reception_destinations')
-      .select('id, source_id, destination_id, created_at')
+      .select('id, source_id, destination_id, created_at, filter_rules')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -112,6 +113,7 @@ export class ReceptionDestinationService {
       sourceId: row.source_id,
       destinationId: row.destination_id,
       createdAt: row.created_at,
+      filterRules: row.filter_rules ?? null,
     }));
   }
 

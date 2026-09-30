@@ -15,7 +15,7 @@ interface ReceptionLink {
     user_agent?: string;
     headers?: Record<string, string>;
     payload?: Record<string, unknown>;
-  };
+  } | null;
 }
 
 interface Reception {
@@ -41,6 +41,8 @@ function ReceptionLinksPage() {
   const [selectedDestination, setSelectedDestination] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filteringLink, setFilteringLink] = useState<ReceptionLink | null>(null);
+  const [payloadEdits, setPayloadEdits] = useState<Record<string, string>>({});
+  const [filterError, setFilterError] = useState<string | null>(null);
   const [filterForm, setFilterForm] = useState({
     user_agent: '',
     headers: {} as Record<string, string>,
@@ -171,6 +173,8 @@ function ReceptionLinksPage() {
   };
 
   const handleOpenFilterModal = (link: ReceptionLink) => {
+    setPayloadEdits({});
+    setFilterError(null);
     setFilteringLink(link);
     setFilterForm({
       user_agent: link.filterRules?.user_agent || '',
@@ -188,11 +192,25 @@ function ReceptionLinksPage() {
     if (!filteringLink) return;
 
     try {
+      setFilterError(null);
+      const payload = { ...filterForm.payload };
+      for (const [key, text] of Object.entries(payloadEdits)) {
+        if (!(key in payload)) continue;
+        if (typeof payload[key] === 'string') {
+          payload[key] = text;
+        } else {
+          try {
+            payload[key] = JSON.parse(text);
+          } catch {
+            throw new Error(`Informe um valor JSON válido para o campo ${key}.`);
+          }
+        }
+      }
       const token = await getToken();
       const filterRules = {
         ...(filterForm.user_agent && { user_agent: filterForm.user_agent }),
         ...(Object.keys(filterForm.headers).length > 0 && { headers: filterForm.headers }),
-        ...(Object.keys(filterForm.payload).length > 0 && { payload: filterForm.payload }),
+        ...(Object.keys(payload).length > 0 && { payload }),
       };
 
       const response = await fetch(
@@ -215,7 +233,7 @@ function ReceptionLinksPage() {
       setShowFilterModal(false);
       await fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save filters');
+      setFilterError(err instanceof Error ? err.message : 'Não foi possível salvar os filtros.');
     }
   };
 
@@ -230,6 +248,7 @@ function ReceptionLinksPage() {
             </div>
 
             <div className={styles.modalBody}>
+              {filterError && <div role="alert" className={styles.errorBanner}>{filterError}</div>}
               <p style={{ marginBottom: '16px', color: '#94a3b8', fontSize: '13px' }}>
                 Defina condições para este destino receber webhooks
               </p>
@@ -251,7 +270,17 @@ function ReceptionLinksPage() {
                 <div className={styles.keyValueList}>
                   {Object.entries(filterForm.headers).map(([key, value]) => (
                     <div key={key} className={styles.keyValueItem}>
-                      <span>{key}: {value}</span>
+                      <label className={styles.savedFilter}>
+                        <span>{key}</span>
+                        <input
+                          aria-label={`Header ${key}`}
+                          value={value}
+                          onChange={(e) => setFilterForm({
+                            ...filterForm,
+                            headers: { ...filterForm.headers, [key]: e.target.value },
+                          })}
+                        />
+                      </label>
                       <button
                         className="btn-small-danger"
                         onClick={() => {
@@ -302,12 +331,24 @@ function ReceptionLinksPage() {
                 <div className={styles.keyValueList}>
                   {Object.entries(filterForm.payload).map(([key, value]) => (
                     <div key={key} className={styles.keyValueItem}>
-                      <span>{key}: {JSON.stringify(value)}</span>
+                      <label className={styles.savedFilter}>
+                        <span>{key}</span>
+                        <input
+                          aria-label={`Payload ${key}`}
+                          value={payloadEdits[key] ?? (typeof value === 'string' ? value : JSON.stringify(value))}
+                          onChange={(e) => setPayloadEdits({ ...payloadEdits, [key]: e.target.value })}
+                        />
+                      </label>
                       <button
                         className="btn-small-danger"
                         onClick={() => {
                           const newPayload = { ...filterForm.payload };
                           delete newPayload[key];
+                          setPayloadEdits((current) => {
+                            const next = { ...current };
+                            delete next[key];
+                            return next;
+                          });
                           setFilterForm({ ...filterForm, payload: newPayload });
                         }}
                       >

@@ -298,6 +298,23 @@
   justify-content: flex-end;
 }
 
+.filterSection .savedFilter {
+  flex: 1;
+  min-width: 0;
+  margin: 0 8px 0 0;
+}
+
+.savedFilter span {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-bottom: 6px;
+}
+
+.savedFilter input {
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
 @media (max-width: 640px) {
   .formRow {
     grid-template-columns: 1fr;

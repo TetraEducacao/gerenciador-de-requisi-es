@@ -40,11 +40,17 @@ test('reception links use the source ID while revocation keeps the API key ID', 
       mapping = JSON.parse(String(init.body));
       assert.equal(mapping?.source_id, sourceId);
       assert.equal(mapping?.destination_id, destinationId);
-      assert.equal(url.searchParams.get('on_conflict'), 'source_id');
       return new Response(null, { status: 201 });
+    }
+    if (table === 'reception_destinations' && init?.method === 'PATCH') {
+      assert.equal(url.searchParams.get('source_id'), `eq.${sourceId}`);
+      assert.equal(url.searchParams.get('destination_id'), `eq.${destinationId}`);
+      Object.assign(mapping!, JSON.parse(String(init.body)));
+      return new Response(null, { status: 204 });
     }
     if (table === 'reception_destinations') {
       if (url.searchParams.has('source_id')) assert.equal(url.searchParams.get('source_id'), `eq.${sourceId}`);
+      else assert.ok(url.searchParams.get('select')?.split(',').includes('filter_rules'));
       return json(mapping ? [{ id: 'mapping-id', ...mapping, created_at: '2026-01-01' }] : []);
     }
     if (table === 'sources') {
@@ -72,6 +78,23 @@ test('reception links use the source ID while revocation keeps the API key ID', 
   const links = await app.inject({ method: 'GET', url: '/admin/reception-destinations' });
   assert.equal(links.statusCode, 200);
   assert.equal(links.json().data[0].sourceName, 'Reception');
+  assert.equal(links.json().data[0].filterRules, null);
+  // Save, reopen, edit and remove filters through the same API used by the modal.
+  for (const rules of [
+    { user_agent: 'axios/1.20.0', headers: { 'x-custom': 'original' }, payload: { status: 'PAID', count: 2, active: false } },
+    { user_agent: 'GuzzleHttp/7', headers: { 'x-custom': 'edited' }, payload: { status: 'PENDING', count: 3, active: true } },
+    null,
+  ]) {
+    const updated = await app.inject({
+      method: 'PUT',
+      url: `/admin/reception-destinations/${sourceId}/${destinationId}/filter-rules`,
+      payload: { filter_rules: rules },
+    });
+    assert.equal(updated.statusCode, 200);
+    const reopened = await app.inject({ method: 'GET', url: '/admin/reception-destinations' });
+    assert.equal(reopened.statusCode, 200);
+    assert.deepEqual(reopened.json().data[0].filterRules, rules);
+  }
   assert.equal(await getReceptionDestinationService().getDestinationForReception(sourceId), destinationId);
   const removed = await app.inject({ method: 'DELETE', url: `/admin/sources/${reception.id}` });
   assert.equal(removed.statusCode, 204);

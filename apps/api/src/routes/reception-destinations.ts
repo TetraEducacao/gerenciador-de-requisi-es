@@ -50,6 +50,7 @@ export async function registerReceptionDestinationRoutes(fastify: FastifyInstanc
             destinationId: mapping.destinationId,
             destinationName,
             createdAt: mapping.createdAt,
+            filterRules: mapping.filterRules,
           };
         })
       );
